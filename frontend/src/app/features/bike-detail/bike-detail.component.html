@@ -1,0 +1,222 @@
+@if (loading()) {
+  <div class="detail-loading">
+    <div class="spinner spinner-lg"></div>
+    <p>Loading bike details...</p>
+  </div>
+}
+
+@if (!loading() && !bike()) {
+  <div class="detail-error">
+    <div style="font-size:3rem">🏍️</div>
+    <h3>Listing not found</h3>
+    <p>This listing may have been removed or is unavailable.</p>
+    <a routerLink="/" class="btn btn-primary">Browse Marketplace</a>
+  </div>
+}
+
+@if (bike(); as b) {
+<div class="detail-page animate-in">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <div class="container">
+      <a routerLink="/">Marketplace</a>
+      <span>/</span>
+      <span>{{ b.brand }} {{ b.model }}</span>
+    </div>
+  </div>
+
+  <div class="container detail-container">
+    <!-- Left Column -->
+    <div class="detail-left">
+      <!-- Image Gallery -->
+      <div class="gallery">
+        <div class="gallery-main">
+          <img [src]="getImages(b)[activeImg()]" [alt]="b.title" class="gallery-img"
+               onerror="this.src='https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=800&auto=format'">
+          @if (b.isSuspicious) {
+            <div class="suspicious-overlay">
+              ⚠️ This listing has been flagged for review
+            </div>
+          }
+        </div>
+        @if (getImages(b).length > 1) {
+          <div class="gallery-thumbs">
+            @for (img of getImages(b); let i = $index; track i) {
+              <img [src]="img" [alt]="'Image ' + (i+1)" class="gallery-thumb"
+                   [class.active]="activeImg() === i" (click)="activeImg.set(i)">
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Description -->
+      @if (b.description) {
+        <div class="card p-5 mt-4">
+          <h4 class="section-mini-title">Seller Description</h4>
+          <p class="description-text">{{ b.description }}</p>
+        </div>
+      }
+
+      <!-- Full Specs Table -->
+      <div class="card p-5 mt-4">
+        <h4 class="section-mini-title">Full Specifications</h4>
+        <table class="specs-table">
+          <tr><td>Brand</td><td>{{ b.brand }}</td></tr>
+          <tr><td>Model</td><td>{{ b.model }}</td></tr>
+          <tr><td>Type</td><td>{{ b.bikeType }}</td></tr>
+          <tr><td>Year</td><td>{{ b.year }}</td></tr>
+          <tr><td>Engine</td><td>{{ b.engineCC }} cc</td></tr>
+          <tr><td>Mileage</td><td>{{ b.mileage.toLocaleString() }} km</td></tr>
+          <tr><td>Color</td><td>{{ b.color }}</td></tr>
+          <tr><td>Transmission</td><td>{{ b.transmission }}</td></tr>
+          <tr><td>Fuel Type</td><td>{{ b.fuelType }}</td></tr>
+          <tr><td>Condition</td><td>
+            <span class="badge" [class]="getConditionClass(b.condition)">{{ b.condition }}</span>
+          </td></tr>
+          <tr><td>Owners</td><td>{{ b.ownerCount }}</td></tr>
+          <tr><td>Service History</td><td>{{ b.serviceHistory }}</td></tr>
+          <tr><td>Accident History</td><td>{{ b.accidentHistory }}</td></tr>
+          <tr><td>Insurance</td><td>{{ b.insurance }}</td></tr>
+          <tr><td>Registration</td><td>{{ b.registration }}</td></tr>
+          <tr><td>Location</td><td>{{ b.location }}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="detail-right">
+      <!-- Title & Price -->
+      <div class="detail-title-card card p-5">
+        <div class="detail-badges">
+          <span class="badge" [class]="getConditionClass(b.condition)">{{ b.condition }}</span>
+          @if (b.isSuspicious) { <span class="badge badge-rose">⚠️ Flagged</span> }
+          <span class="badge badge-gray">{{ b.bikeType }}</span>
+        </div>
+        <h1 class="detail-title">{{ b.title }}</h1>
+        <div class="detail-meta">
+          <span>📍 {{ b.location }}</span>
+          <span>📅 {{ b.createdDate | date:'mediumDate' }}</span>
+        </div>
+        <div class="detail-price">{{ formatPrice(b.price) }}</div>
+        <div class="detail-price-lkr">LKR {{ b.price.toLocaleString() }}</div>
+      </div>
+
+      <!-- AI Valuation Panel -->
+      <div class="card p-5 mt-4 ai-panel">
+        <div class="ai-panel-header">
+          <h4>🧬 AI Price Analysis</h4>
+          <span class="badge badge-violet">XGBoost</span>
+        </div>
+
+        @if (!valuation()) {
+          <div class="ai-loading">
+            <div class="spinner"></div>
+            <span>Analyzing market data...</span>
+          </div>
+        }
+
+        @if (valuation(); as v) {
+          <div class="animate-in">
+            <!-- Predicted Price -->
+            <div class="ai-price-row">
+              <div>
+                <div class="ai-price-label">AI Fair Market Price</div>
+                <div class="ai-price-val">{{ formatPrice(v.predictedPrice) }}</div>
+              </div>
+              <div class="deal-chip" [class]="getDealClass(v.dealRating)">
+                {{ getDealIcon(v.dealRating) }} {{ v.dealRating }}
+              </div>
+            </div>
+
+            <!-- Health Score Bar -->
+            <div class="health-section mt-4">
+              <div class="health-row-head">
+                <span class="stat-label">Bike Health</span>
+                <span class="health-num" [style.color]="getHealthColor(v.healthScore)">
+                  {{ v.healthScore }}/100
+                </span>
+              </div>
+              <div class="health-bar-track mt-1">
+                <div class="health-bar-fill"
+                     [style.width.%]="v.healthScore"
+                     [style.background]="getHealthColor(v.healthScore)">
+                </div>
+              </div>
+            </div>
+
+            <!-- Bargain Price -->
+            <div class="bargain-box mt-4">
+              <span class="bargain-label">💬 Suggested Negotiation Price</span>
+              <span class="bargain-val">{{ formatPrice(v.suggestedBargainPrice) }}</span>
+            </div>
+
+            <!-- Annual Costs mini -->
+            <div class="cost-mini mt-3">
+              <div class="cost-mini-row">
+                <span>⛽ Annual Fuel</span>
+                <span>Rs. {{ v.annualFuelCost.toLocaleString() }}</span>
+              </div>
+              <div class="cost-mini-row">
+                <span>🔧 Maintenance</span>
+                <span>Rs. {{ v.annualMaintenanceCost.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Seller Contact -->
+      <div class="card p-5 mt-4">
+        <h4 class="section-mini-title">Seller Information</h4>
+        <div class="seller-info">
+          <div class="seller-avatar">{{ b.sellerName.charAt(0) }}</div>
+          <div>
+            <div class="seller-name">{{ b.sellerName }}</div>
+            <div class="seller-phone">{{ b.sellerPhone }}</div>
+          </div>
+        </div>
+        <div class="seller-actions mt-4">
+          <button class="btn btn-primary w-full" id="btn-call-seller"
+                  (click)="copyContact(b.sellerPhone)">
+            📞 Call Seller
+          </button>
+          <a [routerLink]="['/compare']" [queryParams]="{add: b.id}" class="btn btn-outline w-full" id="btn-add-compare">
+            ⚖️ Add to Compare
+          </a>
+          <button class="btn btn-outline w-full" id="btn-wishlist" (click)="toggleWishlist()">
+            {{ inWishlist() ? '❤️ Remove from Wishlist' : '🤍 Save to Wishlist' }}
+          </button>
+          <button class="btn btn-ghost text-rose w-full mt-2" id="btn-report" (click)="reportListing()">
+            ⚠️ Report Listing
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Similar Bikes Section -->
+  @if (similarBikes().length > 0) {
+    <div class="container mt-8 mb-8">
+      <h3 class="mb-4">Similar Motorcycles</h3>
+      <div class="grid-4">
+        @for (sb of similarBikes(); track sb.id) {
+          <article class="bike-card card">
+            <a [routerLink]="['/bike', sb.id]" class="bike-card-img-wrap" style="height: 140px;">
+              <img [src]="getImages(sb)[0]" [alt]="sb.title" class="bike-card-img" style="height: 140px;"
+                   onerror="this.src='https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=600&auto=format'">
+            </a>
+            <div class="p-3">
+              <h4 class="text-sm font-bold truncate"><a [routerLink]="['/bike', sb.id]">{{ sb.title }}</a></h4>
+              <div class="text-xs text-muted mt-1">{{ sb.year }} · {{ sb.mileage.toLocaleString() }} km</div>
+              <div class="font-bold text-gradient-cyan mt-2">{{ formatPrice(sb.price) }}</div>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  }
+
+</div>
+}

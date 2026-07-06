@@ -1,0 +1,56 @@
+<div class="container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-rose">Admin Portal</span>
+      <h1 class="mt-2 text-gradient-rose">User Management</h1>
+      <p class="text-muted text-sm">Manage user accounts, roles, and access.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-12">
+        <span class="spinner"></span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined Date</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.id) {
+              <tr>
+                <td>#{{ user.id }}</td>
+                <td class="font-bold">{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td><span class="badge" [class]="getRoleClass(user.role)">{{ user.role }}</span></td>
+                <td>
+                  <span class="badge" [class.badge-emerald]="user.status === 'Active'" [class.badge-rose]="user.status !== 'Active'">
+                    {{ user.status }}
+                  </span>
+                </td>
+                <td>{{ user.joinedDate | date:'shortDate' }}</td>
+                <td>
+                  <div class="flex justify-center gap-2">
+                    <button class="btn btn-outline btn-sm" (click)="toggleStatus(user)">
+                      {{ user.status === 'Active' ? 'Suspend' : 'Activate' }}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

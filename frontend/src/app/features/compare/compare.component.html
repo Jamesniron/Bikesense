@@ -1,0 +1,137 @@
+<section class="compare-hero">
+  <div class="container">
+    <span class="badge badge-cyan">⚖️ Side-by-Side Comparison</span>
+    <h1>Compare Motorcycles <span class="text-gradient-cyan">Like a Pro</span></h1>
+    <p>Select up to 3 motorcycles. AI valuations, deal ratings, and best-value highlights are automatically applied.</p>
+  </div>
+</section>
+
+<section class="compare-main">
+  <div class="container">
+    <!-- Slot Selectors -->
+    <div class="slot-selectors">
+      @for (slot of slots(); let i = $index; track i) {
+        <div class="slot-selector" [class.filled]="!!slot.bike">
+          @if (!slot.bike && !slot.loading) {
+            <div class="slot-empty card p-6">
+              <div class="slot-empty-icon">🏍️</div>
+              <h4>Slot {{ i + 1 }}</h4>
+              <p>Select a motorcycle to compare</p>
+              <select class="form-control mt-3" [id]="'slot-select-' + i"
+                      (change)="onSlotSelectChange(i, $event)">
+                <option value="">Choose a bike...</option>
+                @for (b of availableBikes(); track b.id) {
+                  <option [value]="b.id">{{ b.brand }} {{ b.model }} {{ b.year }}</option>
+                }
+              </select>
+            </div>
+          }
+          @if (slot.loading) {
+            <div class="slot-loading card p-6">
+              <div class="spinner spinner-lg" style="margin: 0 auto 1rem"></div>
+              <p class="text-center text-muted">Loading bike data...</p>
+            </div>
+          }
+          @if (slot.bike && !slot.loading) {
+            <div class="slot-filled card">
+              <div class="slot-img-wrap">
+                <img [src]="slot.bike.imageUrls[0] || 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=400&auto=format'"
+                     [alt]="slot.bike.title" class="slot-img">
+                <button class="slot-clear-btn" [id]="'btn-clear-slot-' + i" (click)="clearSlot(i)"
+                        title="Remove">✕</button>
+              </div>
+              <div class="slot-header p-4">
+                <h4>{{ slot.bike.brand }} {{ slot.bike.model }}</h4>
+                <p class="text-muted text-sm">{{ slot.bike.year }} · {{ slot.bike.location }}</p>
+                <div class="slot-price">{{ formatPrice(slot.bike.price) }}</div>
+                @if (slot.valuation) {
+                  <div class="slot-deal-badge"
+                       [class.deal-excellent]="slot.valuation.dealRating === 'Excellent Deal'"
+                       [class.deal-fair]="slot.valuation.dealRating === 'Fair Price'"
+                       [class.deal-overpriced]="slot.valuation.dealRating === 'Overpriced'">
+                    {{ slot.valuation.dealRating }}
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Comparison Table -->
+    @if (filledCount >= 2) {
+      <div class="compare-table animate-in">
+        <h3 class="compare-table-title">Specification Matrix</h3>
+        <div class="table-wrap">
+          <table class="cmp-table">
+            <thead>
+              <tr>
+                <th class="spec-col">Specification</th>
+                @for (slot of slots(); let i = $index; track i) {
+                  @if (slot.bike) {
+                    <th>{{ slot.bike.brand }} {{ slot.bike.model }}</th>
+                  }
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (spec of specKeys; track spec.key) {
+                <tr>
+                  <td class="spec-name">{{ spec.label }}</td>
+                  @for (slot of slots(); let i = $index; track i) {
+                    @if (slot.bike) {
+                      <td [class.best-cell]="isBest(i, spec.key)">
+                        @if (isBest(i, spec.key)) { <span class="best-icon">★</span> }
+                        {{ getSpecValue(slot.bike, spec.key, spec.unit) }}
+                      </td>
+                    }
+                  }
+                </tr>
+              }
+              <!-- AI Predicted Price Row -->
+              <tr class="ai-row">
+                <td class="spec-name">AI Fair Price</td>
+                @for (slot of slots(); let i = $index; track i) {
+                  @if (slot.bike) {
+                    <td>
+                      @if (slot.valuation) {
+                        {{ formatPrice(slot.valuation.predictedPrice) }}
+                      } @else {
+                        <span class="spinner"></span>
+                      }
+                    </td>
+                  }
+                }
+              </tr>
+              <!-- Health Score Row -->
+              <tr class="ai-row">
+                <td class="spec-name">Health Score</td>
+                @for (slot of slots(); let i = $index; track i) {
+                  @if (slot.bike) {
+                    <td>
+                      @if (slot.valuation) {
+                        <div class="inline-health" [style.--hs]="slot.valuation.healthScore">
+                          {{ slot.valuation.healthScore }}/100
+                        </div>
+                      } @else {
+                        —
+                      }
+                    </td>
+                  }
+                }
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (filledCount < 2) {
+      <div class="compare-hint animate-in">
+        <div class="hint-icon">💡</div>
+        <p>Select at least <strong>2 motorcycles</strong> above to start comparing</p>
+      </div>
+    }
+  </div>
+</section>

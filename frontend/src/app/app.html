@@ -1,0 +1,167 @@
+<!-- ═══ Navbar ════════════════════════════════════════════════════════ -->
+<nav class="navbar text-sm" [class.scrolled]="scrolled()">
+  <div class="nav-container">
+    <!-- Logo -->
+    <a routerLink="/" class="nav-brand" (click)="closeMobile()">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-name">Bike<span class="brand-accent">Sense</span></span>
+    </a>
+
+    <!-- Role-Based Desktop Links -->
+    <ul class="nav-links">
+      <!-- General Links -->
+      <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Marketplace</a></li>
+      <li><a routerLink="/valuation" routerLinkActive="active"><span class="ai-badge">AI</span> Valuation Lab</a></li>
+      <li><a routerLink="/compare" routerLinkActive="active">Compare</a></li>
+
+      <!-- Authenticated Buyer Links -->
+      @if (auth.isLoggedIn() && (auth.getRole() === 'Buyer' || auth.getRole() === '')) {
+        <li><a routerLink="/buyer/wishlist" routerLinkActive="active">❤️ Wishlist</a></li>
+      }
+
+      <!-- Authenticated Seller/Dealer Links -->
+      @if (auth.isLoggedIn() && (auth.getRole() === 'Seller' || auth.getRole() === 'Dealer')) {
+        <li><a routerLink="/seller/dashboard" routerLinkActive="active">📈 Dashboard</a></li>
+        <li><a routerLink="/seller/listings" routerLinkActive="active">🏍️ My Listings</a></li>
+        <li><a routerLink="/seller/add-bike" routerLinkActive="active">➕ Add Bike</a></li>
+      }
+
+      <!-- Administrator Links -->
+      @if (auth.isLoggedIn() && auth.getRole() === 'Administrator') {
+        <li class="dropdown-trigger">
+          <a routerLink="/admin/dashboard" routerLinkActive="active">🛡️ Admin Panel</a>
+          <ul class="dropdown-menu">
+            <li><a routerLink="/admin/dashboard">Metrics Dashboard</a></li>
+            <li><a routerLink="/admin/users">User Management</a></li>
+            <li><a routerLink="/admin/bikes">Listing Repository</a></li>
+            <li><a routerLink="/admin/reports">Report Inbox Log</a></li>
+            <li><a routerLink="/admin/analytics">System Analytics</a></li>
+          </ul>
+        </li>
+      }
+    </ul>
+
+    <!-- Desktop Auth -->
+    <div class="nav-actions">
+      @if (auth.isLoggedIn()) {
+        <span class="nav-role-tag badge badge-cyan">{{ auth.getRole() }}</span>
+        <span class="nav-user-name">{{ auth.currentUser()?.fullName?.split(' ')?.[0] ?? '' }}</span>
+        <button class="btn btn-ghost btn-sm" id="btn-logout" (click)="auth.logout()">Sign Out</button>
+      } @else {
+        <a routerLink="/auth/login" class="btn btn-ghost btn-sm" id="nav-login">Sign In</a>
+        <a routerLink="/auth/register" class="btn btn-primary btn-sm" id="nav-register">Get Started</a>
+      }
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button class="mobile-toggle" id="btn-mobile-menu" (click)="toggleMobile()" aria-label="Menu">
+      <span [class.open]="mobileOpen()"></span>
+      <span [class.open]="mobileOpen()"></span>
+      <span [class.open]="mobileOpen()"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  @if (mobileOpen()) {
+    <div class="mobile-menu animate-in">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="closeMobile()">Marketplace</a>
+      <a routerLink="/valuation" routerLinkActive="active" (click)="closeMobile()">AI Valuation Lab</a>
+      <a routerLink="/compare" routerLinkActive="active" (click)="closeMobile()">Compare</a>
+
+      @if (auth.isLoggedIn()) {
+        <div class="mobile-divider"></div>
+        @if (auth.getRole() === 'Buyer' || auth.getRole() === '') {
+          <a routerLink="/buyer/wishlist" routerLinkActive="active" (click)="closeMobile()">❤️ Wishlist</a>
+        }
+        @if (auth.getRole() === 'Seller' || auth.getRole() === 'Dealer') {
+          <a routerLink="/seller/dashboard" routerLinkActive="active" (click)="closeMobile()">📈 Seller Dashboard</a>
+          <a routerLink="/seller/listings" routerLinkActive="active" (click)="closeMobile()">🏍️ My Listings</a>
+          <a routerLink="/seller/add-bike" routerLinkActive="active" (click)="closeMobile()">➕ Add Bike Listing</a>
+        }
+        @if (auth.getRole() === 'Administrator') {
+          <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMobile()">🛡️ Admin Dashboard</a>
+          <a routerLink="/admin/users" routerLinkActive="active" (click)="closeMobile()">👤 User Management</a>
+          <a routerLink="/admin/bikes" routerLinkActive="active" (click)="closeMobile()">🏍️ Motorcycle Management</a>
+          <a routerLink="/admin/reports" routerLinkActive="active" (click)="closeMobile()">📋 Reports & Flags</a>
+          <a routerLink="/admin/analytics" routerLinkActive="active" (click)="closeMobile()">📊 AI & Comp Analytics</a>
+        }
+        <div class="mobile-divider"></div>
+        <button class="btn btn-outline w-full" (click)="auth.logout(); closeMobile()">Sign Out</button>
+      } @else {
+        <div class="mobile-divider"></div>
+        <a routerLink="/auth/login" class="btn btn-outline w-full" (click)="closeMobile()">Sign In</a>
+        <a routerLink="/auth/register" class="btn btn-primary w-full" (click)="closeMobile()">Get Started</a>
+      }
+    </div>
+  }
+</nav>
+
+<!-- ═══ Main Content ══════════════════════════════════════════════════ -->
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- ═══ Global Toast Container ════════════════════════════════════════ -->
+<div class="toast-container">
+  @for (t of toast.toasts(); track t.id) {
+    <div class="toast animate-in" [class]="'toast-' + t.type">
+      <span class="toast-icon">
+        @if (t.type === 'success') { ✅ }
+        @else if (t.type === 'error') { ❌ }
+        @else if (t.type === 'warning') { ⚠️ }
+        @else { ℹ️ }
+      </span>
+      <span class="toast-msg">{{ t.message }}</span>
+      <button class="toast-close" (click)="toast.dismiss(t.id)">✕</button>
+    </div>
+  }
+</div>
+
+<!-- ═══ Global Confirmation Modal ═════════════════════════════════════ -->
+@if (dialog.active()) {
+  <div class="dialog-overlay animate-in">
+    <div class="dialog-card card p-6">
+      <h3 class="dialog-title" [class.text-danger]="dialog.config()?.danger">
+        {{ dialog.config()?.title }}
+      </h3>
+      <p class="dialog-message mt-2 text-muted text-sm">
+        {{ dialog.config()?.message }}
+      </p>
+      <div class="dialog-actions mt-6 flex justify-end gap-3">
+        <button class="btn btn-outline btn-sm" (click)="dialog.cancel()">
+          {{ dialog.config()?.cancelText }}
+        </button>
+        <button class="btn btn-sm" [class.btn-danger]="dialog.config()?.danger" [class.btn-primary]="!dialog.config()?.danger" (click)="dialog.approve()">
+          {{ dialog.config()?.confirmText }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══ Footer ════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">⚡ Bike<span>Sense</span></div>
+        <p>Sri Lanka's first AI-powered used motorcycle marketplace. Smart pricing, verified listings.</p>
+      </div>
+      <div class="footer-links">
+        <h5>Platform</h5>
+        <a routerLink="/">Marketplace</a>
+        <a routerLink="/valuation">AI Valuation</a>
+        <a routerLink="/compare">Compare</a>
+      </div>
+      <div class="footer-links">
+        <h5>Account</h5>
+        <a routerLink="/auth/login">Sign In</a>
+        <a routerLink="/auth/register">Register</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 BikeSense LK. All rights reserved.</span>
+      <span class="footer-tech">Powered by XGBoost AI · ASP.NET Core · Angular</span>
+    </div>
+  </div>
+</footer>

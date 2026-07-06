@@ -1,0 +1,110 @@
+<div class="seller-dashboard container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-cyan">Seller Portal</span>
+      <h1 class="mt-2 text-gradient-cyan">Seller Dashboard</h1>
+      <p class="text-muted text-sm">Monitor listing metrics and verify buyers engagement.</p>
+    </div>
+    <div>
+      <a routerLink="/seller/add-bike" class="btn btn-primary" id="btn-add-listing-dashboard">
+        ➕ Add New Listing
+      </a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+      <span class="spinner spinner-lg"></span>
+    </div>
+  } @else {
+    <!-- Dashboard Cards Grid -->
+    <div class="grid-4 mb-8">
+      <div class="card p-5 stat-card">
+        <div class="stat-icon text-muted">🏍️</div>
+        <div class="stat-value">{{ cards().totalListings }}</div>
+        <div class="stat-label">Total Listings</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--cyan)">🟢</div>
+        <div class="stat-value">{{ cards().activeListings }}</div>
+        <div class="stat-label">Active Listings</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--emerald)">🤝</div>
+        <div class="stat-value">{{ cards().soldBikes }}</div>
+        <div class="stat-label">Sold Bikes</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--amber)">⏳</div>
+        <div class="stat-value">{{ cards().pendingApproval }}</div>
+        <div class="stat-label">Pending Approval</div>
+      </div>
+    </div>
+
+    <div class="grid-3 mb-8">
+      <div class="card p-5 stat-card">
+        <div class="stat-icon">👁️</div>
+        <div class="stat-value">{{ cards().totalViews }}</div>
+        <div class="stat-label">Total Views</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--rose)">❤️</div>
+        <div class="stat-value">{{ cards().wishlistCount }}</div>
+        <div class="stat-label">Wishlisted</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--violet)">💬</div>
+        <div class="stat-value">{{ cards().buyerEnquiries }}</div>
+        <div class="stat-label">Buyer Enquiries</div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid-2">
+      <!-- Views Analytics SVG Chart -->
+      <div class="card p-6 chart-container">
+        <h4 class="mb-4">📈 Listing Performance (Views)</h4>
+        <div class="svg-chart-wrapper">
+          <svg viewBox="0 0 500 150" class="svg-chart">
+            <!-- Grid Lines -->
+            @for (y of chartGridLines(); track y) {
+              <line x1="0" [attr.y1]="y" x2="500" [attr.y2]="y" class="grid-line" />
+            }
+            
+            <!-- View Trend Line -->
+            <polyline fill="none" stroke="var(--cyan)" stroke-width="3" [attr.points]="chartPoints()" />
+            
+            <!-- View Trend Glow -->
+            <polyline fill="none" stroke="var(--cyan)" stroke-width="8" opacity="0.15" [attr.points]="chartPoints()" />
+          </svg>
+        </div>
+        <div class="chart-labels flex justify-between mt-3 px-2">
+          @for (lbl of chartData().labels; track lbl) {
+            <span class="text-xs text-muted">{{ lbl }}</span>
+          }
+        </div>
+      </div>
+
+      <!-- Enquiries Analytics SVG Chart -->
+      <div class="card p-6 chart-container">
+        <h4 class="mb-4">💬 Enquiry Engagement</h4>
+        <div class="svg-chart-wrapper">
+          <svg viewBox="0 0 500 150" class="svg-chart">
+            <!-- Grid Lines -->
+            @for (y of chartGridLines(); track y) {
+              <line x1="0" [attr.y1]="y" x2="500" [attr.y2]="y" class="grid-line" />
+            }
+            
+            <!-- Enquiry Line -->
+            <polyline fill="none" stroke="var(--violet)" stroke-width="3" [attr.points]="enquiryPoints()" />
+          </svg>
+        </div>
+        <div class="chart-labels flex justify-between mt-3 px-2">
+          @for (lbl of chartData().labels; track lbl) {
+            <span class="text-xs text-muted">{{ lbl }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,109 @@
+<div class="buyer-dashboard container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-cyan">Buyer Portal</span>
+      <h1 class="mt-2 text-gradient-cyan">My Dashboard</h1>
+      <p class="text-muted text-sm">Personalized recommendations, saved searches, and recent activity.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+      <span class="spinner spinner-lg"></span>
+    </div>
+  } @else {
+    <div class="grid" style="grid-template-columns: 2fr 1fr; gap: 2rem;">
+      <!-- Left Column: Recs & Viewed -->
+      <div>
+        <h3 class="mb-4">🤖 Recommended For You</h3>
+        @if (dashboardData()?.recommended?.length > 0) {
+          <div class="grid-2 mb-8">
+            @for (bike of dashboardData().recommended; track bike.id) {
+              <article class="bike-card card">
+                <a [routerLink]="['/bike', bike.id]" class="bike-card-img-wrap" style="height: 160px;">
+                  <img [src]="bike.imageUrls?.[0] || 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=600&auto=format'" 
+                       class="bike-card-img" style="height: 160px;" />
+                </a>
+                <div class="p-4">
+                  <h4 class="font-bold truncate"><a [routerLink]="['/bike', bike.id]">{{ bike.title }}</a></h4>
+                  <div class="text-xs text-muted mt-1">{{ bike.year }} · {{ bike.location }}</div>
+                  <div class="font-bold text-gradient-cyan mt-2">{{ formatPrice(bike.price) }}</div>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="card p-6 text-center text-muted mb-8">No recommendations right now.</div>
+        }
+
+        <h3 class="mb-4">⏱️ Recently Viewed</h3>
+        @if (dashboardData()?.recentlyViewed?.length > 0) {
+          <div class="grid-3 mb-8">
+            @for (bike of dashboardData().recentlyViewed; track bike.id) {
+              <article class="bike-card card">
+                <a [routerLink]="['/bike', bike.id]" class="bike-card-img-wrap" style="height: 120px;">
+                  <img [src]="bike.imageUrls?.[0] || 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=600&auto=format'" 
+                       class="bike-card-img" style="height: 120px;" />
+                </a>
+                <div class="p-3">
+                  <h4 class="text-sm font-bold truncate"><a [routerLink]="['/bike', bike.id]">{{ bike.title }}</a></h4>
+                  <div class="font-bold text-gradient-cyan mt-1 text-sm">{{ formatPrice(bike.price) }}</div>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Right Column: Notifications & Saved Searches -->
+      <div class="flex flex-col gap-6">
+        
+        <div class="card p-5">
+          <h4 class="mb-4">🔔 Notifications</h4>
+          @if (notifications().length === 0) {
+            <p class="text-sm text-muted">You're all caught up!</p>
+          } @else {
+            <div class="flex flex-col gap-3">
+              @for (n of notifications(); track n.id) {
+                <div class="p-3 rounded border border-divider" [style.opacity]="n.read ? 0.6 : 1">
+                  <div class="flex justify-between">
+                    <span class="font-bold text-sm">{{ n.title }}</span>
+                    @if (!n.read) { <span class="badge badge-rose text-[10px]">New</span> }
+                  </div>
+                  <p class="text-xs text-muted mt-1">{{ n.message }}</p>
+                  @if (!n.read) {
+                    <button class="btn btn-ghost btn-xs mt-2 text-cyan" (click)="markAsRead(n.id)">Mark as Read</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="card p-5">
+          <h4 class="mb-4">🔍 Saved Searches</h4>
+          @if (dashboardData()?.savedSearches?.length > 0) {
+            <div class="flex flex-col gap-2">
+              @for (s of dashboardData().savedSearches; track s.name) {
+                <a [routerLink]="['/marketplace']" [queryParams]="{}" class="flex items-center justify-between p-2 rounded hover:bg-surface-light border border-divider">
+                  <span class="text-sm font-medium">{{ s.name }}</span>
+                  <span class="text-muted">→</span>
+                </a>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="card p-5">
+          <h4 class="mb-4">⭐ Favorite Categories</h4>
+          <div class="flex flex-wrap gap-2">
+            @for (cat of dashboardData()?.favCategories; track cat.name) {
+              <span class="badge badge-outline-cyan">{{ cat.name }} ({{ cat.count }})</span>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,261 @@
+<!-- ═══ Header ════════════════════════════════════════════════════════ -->
+<section class="val-hero">
+  <div class="val-hero-bg">
+    <div class="val-orb val-orb-1"></div>
+    <div class="val-orb val-orb-2"></div>
+  </div>
+  <div class="container val-hero-inner">
+    <span class="badge badge-violet">🧬 AI Valuation Lab</span>
+    <h1>What's Your Motorcycle<br><span class="text-gradient-violet">Really Worth?</span></h1>
+    <p>Input specs below. Our XGBoost model — trained on thousands of Sri Lankan market listings — calculates a fair market price, health score, and 3-year outlook in milliseconds.</p>
+  </div>
+</section>
+
+<!-- ═══ Main Layout ════════════════════════════════════════════════════ -->
+<section class="val-layout">
+  <div class="container">
+    <div class="val-grid">
+
+      <!-- ─── Input Form ─────────────────────────────────────────────── -->
+      <div class="val-form-panel card p-6">
+        <h3 class="form-section-title">Motorcycle Details</h3>
+
+        @if (error()) {
+          <div class="alert alert-error">⚠️ {{ error() }}</div>
+        }
+
+        <div class="grid-2">
+          <!-- Brand -->
+          <div class="form-group">
+            <label class="form-label" for="val-brand">Brand *</label>
+            <select class="form-control" id="val-brand" [(ngModel)]="req.brand" (ngModelChange)="onBrandChange()">
+              <option value="">Select Brand</option>
+              @for (b of brands; track b) {
+                <option [value]="b">{{ b }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Model -->
+          <div class="form-group">
+            <label class="form-label" for="val-model">Model *</label>
+            <select class="form-control" id="val-model" [(ngModel)]="req.model" [disabled]="!req.brand">
+              <option value="">Select Model</option>
+              @for (m of models; track m) {
+                <option [value]="m">{{ m }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Year -->
+          <div class="form-group">
+            <label class="form-label" for="val-year">Year *</label>
+            <input type="number" class="form-control" id="val-year"
+                   [(ngModel)]="req.year" min="1990" [max]="currentYear" placeholder="e.g. 2020">
+          </div>
+
+          <!-- Engine CC -->
+          <div class="form-group">
+            <label class="form-label" for="val-cc">Engine CC *</label>
+            <input type="number" class="form-control" id="val-cc"
+                   [(ngModel)]="req.engineCC" min="50" max="1500" placeholder="e.g. 150">
+          </div>
+
+          <!-- Mileage -->
+          <div class="form-group">
+            <label class="form-label" for="val-mileage">Odometer (km) *</label>
+            <input type="number" class="form-control" id="val-mileage"
+                   [(ngModel)]="req.mileage" min="0" placeholder="e.g. 18000">
+          </div>
+
+          <!-- Owner Count -->
+          <div class="form-group">
+            <label class="form-label" for="val-owners">Owners Count</label>
+            <input type="number" class="form-control" id="val-owners"
+                   [(ngModel)]="req.ownerCount" min="1" max="10">
+          </div>
+
+          <!-- Condition -->
+          <div class="form-group">
+            <label class="form-label" for="val-condition">Condition</label>
+            <select class="form-control" id="val-condition" [(ngModel)]="req.condition">
+              @for (c of conditions; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Service History -->
+          <div class="form-group">
+            <label class="form-label" for="val-service">Service History</label>
+            <select class="form-control" id="val-service" [(ngModel)]="req.serviceHistory">
+              @for (s of serviceOptions; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Accident History -->
+          <div class="form-group">
+            <label class="form-label" for="val-accident">Accident History</label>
+            <select class="form-control" id="val-accident" [(ngModel)]="req.accidentHistory">
+              @for (a of accidentOptions; track a) {
+                <option [value]="a">{{ a }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- List Price (optional) -->
+          <div class="form-group">
+            <label class="form-label" for="val-listprice">Listed Price (optional)</label>
+            <input type="number" class="form-control" id="val-listprice"
+                   [(ngModel)]="listPrice" min="0" placeholder="For deal analysis">
+          </div>
+        </div>
+
+        <div class="val-form-note">
+          * Enter the listed price to get a Deal Quality Analysis
+        </div>
+
+        <button class="btn btn-secondary btn-lg w-full mt-4" id="btn-calculate"
+                [disabled]="loading()" (click)="valuate()">
+          @if (loading()) {
+            <span class="spinner"></span> Calculating...
+          } @else {
+            🧬 Calculate Fair Value
+          }
+        </button>
+      </div>
+
+      <!-- ─── Results Panel ──────────────────────────────────────────── -->
+      <div class="val-results-panel">
+        @if (!result() && !loading()) {
+          <!-- Placeholder -->
+          <div class="val-placeholder card p-8">
+            <div class="placeholder-icon">🔮</div>
+            <h4>Ready to Predict</h4>
+            <p>Fill in the bike details on the left and click Calculate to get your AI-powered valuation report.</p>
+          </div>
+        }
+
+        @if (loading()) {
+          <div class="val-placeholder card p-8">
+            <div class="spinner spinner-lg" style="margin: 0 auto 1.5rem"></div>
+            <h4>Analyzing market data...</h4>
+            <p>XGBoost model processing 4,000+ data points</p>
+          </div>
+        }
+
+        @if (result(); as r) {
+          <div id="valuation-result" class="val-result animate-in">
+
+            <!-- ── Predicted Price ── -->
+            <div class="result-price-card card p-6">
+              <div class="result-price-label">AI Predicted Fair Price</div>
+              <div class="result-price-main">{{ formatPrice(r.predictedPrice) }}</div>
+              <div class="result-price-lkr">LKR {{ r.predictedPrice.toLocaleString() }}</div>
+
+              @if (listPrice > 0) {
+                <div class="deal-rating-row" [class]="getDealClass(r.dealRating)">
+                  {{ getDealIcon(r.dealRating) }} {{ r.dealRating }}
+                </div>
+              }
+
+              <div class="bargain-row">
+                <span class="bargain-label">Suggested Bargain Price</span>
+                <span class="bargain-value">{{ formatPrice(r.suggestedBargainPrice) }}</span>
+              </div>
+            </div>
+
+            <!-- ── Health Score ── -->
+            <div class="card p-5 mt-4">
+              <div class="health-header">
+                <div>
+                  <div class="stat-label">Bike Health Score</div>
+                  <div class="health-score-num" [style.color]="getHealthColor(r.healthScore)">
+                    {{ r.healthScore }}/100
+                  </div>
+                  <div class="health-label">{{ getHealthLabel(r.healthScore) }}</div>
+                </div>
+                <div class="health-ring" [style.--score]="r.healthScore"
+                     [style.--clr]="getHealthColor(r.healthScore)">
+                  <span>{{ r.healthScore }}</span>
+                </div>
+              </div>
+              <div class="health-bar-track mt-3">
+                <div class="health-bar-fill"
+                     [style.width.%]="r.healthScore"
+                     [style.background]="getHealthColor(r.healthScore)">
+                </div>
+              </div>
+            </div>
+
+            <!-- ── 3-Year Depreciation ── -->
+            <div class="card p-5 mt-4">
+              <h4 class="section-mini-title">3-Year Resale Projection</h4>
+              <div class="depr-chart">
+                <!-- Current -->
+                <div class="depr-row">
+                  <span class="depr-year">Now</span>
+                  <div class="depr-bar-wrap">
+                    <div class="depr-bar" style="width:100%; background: var(--gradient-cyan)"></div>
+                  </div>
+                  <span class="depr-val">{{ formatPrice(r.predictedPrice) }}</span>
+                </div>
+                @for (pt of r.depreciationCurve; track pt.yearsPassed) {
+                  <div class="depr-row">
+                    <span class="depr-year">+{{ pt.yearsPassed }}yr</span>
+                    <div class="depr-bar-wrap">
+                      <div class="depr-bar"
+                           [style.width.%]="(pt.projectedValue / r.predictedPrice) * 100"
+                           style="background: var(--gradient-violet)">
+                      </div>
+                    </div>
+                    <span class="depr-val">
+                      {{ formatPrice(pt.projectedValue) }}
+                      <span class="depr-pct">
+                        -{{ getDepreciationPct(r.predictedPrice, pt.projectedValue) }}%
+                      </span>
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- ── 3-Year Ownership Cost ── -->
+            <div class="card p-5 mt-4">
+              <h4 class="section-mini-title">Annual Ownership Costs (Est.)</h4>
+              <div class="cost-grid">
+                <div class="cost-item">
+                  <span class="cost-icon">⛽</span>
+                  <span class="cost-name">Fuel</span>
+                  <span class="cost-val">Rs. {{ r.annualFuelCost.toLocaleString() }}/yr</span>
+                </div>
+                <div class="cost-item">
+                  <span class="cost-icon">🔧</span>
+                  <span class="cost-name">Maintenance</span>
+                  <span class="cost-val">Rs. {{ r.annualMaintenanceCost.toLocaleString() }}/yr</span>
+                </div>
+                <div class="cost-item">
+                  <span class="cost-icon">🛡️</span>
+                  <span class="cost-name">Insurance</span>
+                  <span class="cost-val">Rs. {{ r.annualInsuranceCost.toLocaleString() }}/yr</span>
+                </div>
+                <div class="cost-item">
+                  <span class="cost-icon">📋</span>
+                  <span class="cost-name">License</span>
+                  <span class="cost-val">Rs. {{ r.annualLicenseCost.toLocaleString() }}/yr</span>
+                </div>
+              </div>
+              <div class="total-cost-row">
+                <span>3-Year Total Cost of Ownership</span>
+                <span class="total-cost-val">Rs. {{ totalOwnershipCost.toLocaleString() }}</span>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>

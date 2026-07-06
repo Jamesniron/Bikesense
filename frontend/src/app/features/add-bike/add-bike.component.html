@@ -1,0 +1,330 @@
+<div class="add-bike container py-8" style="max-width: 800px">
+  
+  <!-- Wizard Steps Header -->
+  <div class="wizard-header mb-8 card p-4 flex justify-between items-center text-xs">
+    @for (s of [1,2,3,4,5,6]; track s) {
+      <div class="step-indicator" [class.active]="currentStep() === s" [class.completed]="currentStep() > s">
+        <span class="step-num">{{ s }}</span>
+        <span class="step-name hidden sm:inline">
+          @if (s === 1) { Basic Info }
+          @else if (s === 2) { Details }
+          @else if (s === 3) { Pricing }
+          @else if (s === 4) { Description }
+          @else if (s === 5) { Location }
+          @else if (s === 6) { Uploads }
+        </span>
+      </div>
+      @if (s < 6) { <div class="step-connector"></div> }
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+      <span class="spinner spinner-lg"></span>
+    </div>
+  } @else {
+    
+    <!-- ─── Step 1: Basic Info ─────────────────────────────────── -->
+    @if (currentStep() === 1) {
+      <div class="card p-6 animate-in">
+        <h3 class="mb-4">Step 1: Basic Information</h3>
+        <form [formGroup]="step1Form" class="flex flex-col gap-4">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Brand *</label>
+              <select class="form-control" formControlName="brand" (change)="onBrandChange()">
+                <option value="">Select Brand</option>
+                @for (b of brands; track b) { <option [value]="b">{{ b }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Model *</label>
+              <select class="form-control" formControlName="model" [disabled]="!step1Form.get('brand')?.value">
+                <option value="">Select Model</option>
+                @for (m of models; track m) { <option [value]="m">{{ m }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Variant</label>
+              <input type="text" class="form-control" formControlName="variant" placeholder="e.g. DLX, ABS, V3" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Manufacture Year *</label>
+              <input type="number" class="form-control" formControlName="year" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Registration Year</label>
+              <input type="number" class="form-control" formControlName="regYear" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Engine Capacity (CC) *</label>
+              <input type="number" class="form-control" formControlName="engineCC" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fuel Type *</label>
+              <select class="form-control" formControlName="fuelType">
+                @for (f of fuelTypes; track f) { <option [value]="f">{{ f }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Transmission *</label>
+              <select class="form-control" formControlName="transmission">
+                @for (t of transmissions; track t) { <option [value]="t">{{ t }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Color *</label>
+              <input type="text" class="form-control" formControlName="color" placeholder="e.g. Matt Black" />
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- ─── Step 2: Vehicle Details ────────────────────────────── -->
+    @if (currentStep() === 2) {
+      <div class="card p-6 animate-in">
+        <h3 class="mb-4">Step 2: Vehicle Details</h3>
+        <form [formGroup]="step2Form" class="flex flex-col gap-4">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Mileage (km) *</label>
+              <input type="number" class="form-control" formControlName="mileage" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Owners *</label>
+              <input type="number" class="form-control" formControlName="ownerCount" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Condition *</label>
+              <select class="form-control" formControlName="condition">
+                @for (c of conditions; track c) { <option [value]="c">{{ c }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Accident History *</label>
+              <select class="form-control" formControlName="accidentHistory">
+                <option value="None">None</option>
+                <option value="Minor">Minor</option>
+                <option value="Major">Major</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service History *</label>
+              <select class="form-control" formControlName="serviceHistory">
+                <option value="Full">Full</option>
+                <option value="Partial">Partial</option>
+                <option value="None">None</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Insurance Status *</label>
+              <select class="form-control" formControlName="insuranceStatus">
+                <option value="Active">Active</option>
+                <option value="Expired">Expired</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Registration Book *</label>
+              <select class="form-control" formControlName="regBookAvailable">
+                <option value="Yes">Available</option>
+                <option value="No">Not Available</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">License Expiry *</label>
+              <input type="date" class="form-control" formControlName="licenseExpiry" />
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- ─── Step 3: Pricing ────────────────────────────────────── -->
+    @if (currentStep() === 3) {
+      <div class="card p-6 animate-in">
+        <h3 class="mb-4">Step 3: Pricing</h3>
+        
+        @if (!valuationCalculated()) {
+          <div class="flex justify-center items-center py-8">
+            <span class="spinner"></span>
+            <span class="ml-2 text-sm text-muted">Calculating AI Predictions...</span>
+          </div>
+        } @else {
+          <!-- AI Placeholder Cards -->
+          <div class="grid-3 mb-6 gap-4">
+            <div class="card p-4" style="background: var(--violet-dim); border-color: var(--border-violet)">
+              <div class="text-xs text-muted">Predicted Market Price</div>
+              <div class="h3 text-gradient-violet font-bold mt-1">{{ formatPrice(predictedPrice()) }}</div>
+            </div>
+            <div class="card p-4" style="background: var(--cyan-dim); border-color: var(--border-cyan)">
+              <div class="text-xs text-muted">Estimated Resale Value (1yr)</div>
+              <div class="h3 text-gradient-cyan font-bold mt-1">{{ formatPrice(resaleValue()) }}</div>
+            </div>
+            <div class="card p-4 flex flex-col justify-center text-center border-emerald bg-emerald-dim">
+              <div class="h3 font-bold text-emerald">{{ healthScore() }}/100</div>
+              <div class="text-xs text-muted mt-1">Bike Health Score</div>
+            </div>
+          </div>
+
+          <form [formGroup]="step3Form">
+            <div class="form-group">
+              <label class="form-label">Your Asking Price (LKR) *</label>
+              <input type="number" class="form-control" formControlName="price" style="font-size: 1.2rem; font-weight: bold; color: var(--primary)" />
+            </div>
+
+            <div class="price-meter-widget mt-6">
+              <div class="flex justify-between text-xs text-muted mb-2">
+                <span>Underpriced Deal</span>
+                <span class="font-bold text-primary">Fair Price Meter</span>
+                <span>Overpriced</span>
+              </div>
+              <div class="meter-track">
+                <div class="meter-fill" 
+                     [style.left.%]="priceDiffPercentage < 0 ? 50 + (priceDiffPercentage * 2.5) : 50"
+                     [style.width.%]="Math.abs(priceDiffPercentage) * 2.5"
+                     [style.background]="priceDiffPercentage > 5 ? 'var(--rose)' : (priceDiffPercentage < -5 ? 'var(--emerald)' : 'var(--cyan)')">
+                </div>
+                <div class="meter-pin" [style.left.%]="50 + (priceDiffPercentage * 2.5)"></div>
+              </div>
+              <p class="text-xs text-muted mt-2 text-center">
+                Your price is <strong>{{ Math.abs(priceDiffPercentage) }}% {{ priceDiffPercentage >= 0 ? 'above' : 'below' }}</strong> the AI fair market baseline.
+              </p>
+            </div>
+          </form>
+        }
+      </div>
+    }
+
+    <!-- ─── Step 4: Description ────────────────────────────────── -->
+    @if (currentStep() === 4) {
+      <div class="card p-6 animate-in">
+        <h3 class="mb-4">Step 4: Description</h3>
+        <form [formGroup]="step4Form" class="flex flex-col gap-4">
+          <div class="form-group">
+            <label class="form-label">Description *</label>
+            <textarea class="form-control" formControlName="description" rows="5" placeholder="Highlight key conditions and details."></textarea>
+          </div>
+
+          <div class="form-group mt-2">
+            <label class="form-label">Additional Features</label>
+            <div class="flex gap-2">
+              <input type="text" class="form-control" [(ngModel)]="featureTagInput" [ngModelOptions]="{standalone: true}"
+                     (keyup.enter)="addFeatureTag()" placeholder="e.g. ABS, Digital Meter" />
+              <button type="button" class="btn btn-outline" (click)="addFeatureTag()">Add</button>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3">
+              @for (tag of additionalFeatures(); let i = $index; track i) {
+                <span class="badge badge-cyan">{{ tag }} <button type="button" class="ml-1 text-danger" (click)="removeFeatureTag(i)">✕</button></span>
+              }
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- ─── Step 5: Location ───────────────────────────────────── -->
+    @if (currentStep() === 5) {
+      <div class="card p-6 animate-in">
+        <h3 class="mb-4">Step 5: Location</h3>
+        <form [formGroup]="step5Form" class="flex flex-col gap-4">
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Province *</label>
+              <select class="form-control" formControlName="province" (change)="onProvinceChange()">
+                <option value="">Select Province</option>
+                @for (p of provinces; track p) { <option [value]="p">{{ p }}</option> }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">District *</label>
+              <select class="form-control" formControlName="district" [disabled]="!step5Form.get('province')?.value">
+                <option value="">Select District</option>
+                @for (d of districts; track d) { <option [value]="d">{{ d }}</option> }
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2">
+              <label class="form-label">City/Town *</label>
+              <input type="text" class="form-control" formControlName="city" placeholder="Nearest city or town" />
+            </div>
+          </div>
+        </form>
+      </div>
+    }
+
+    <!-- ─── Step 6: Upload Files ───────────────────────────────── -->
+    @if (currentStep() === 6) {
+      <div class="card p-6 animate-in">
+        <h3 class="mb-2">Step 6: Upload Files</h3>
+        <p class="text-sm text-muted mb-6">Upload bike images and required documents.</p>
+        
+        <!-- Images -->
+        <h4 class="mb-2 font-semibold">Bike Images</h4>
+        <div class="image-dropzone mb-6 card border-dashed" 
+             [class.drag-over]="imageDragOver()"
+             (dragover)="$event.preventDefault(); imageDragOver.set(true)"
+             (dragleave)="imageDragOver.set(false)"
+             (drop)="onImageDrop($event)">
+          <div class="text-center py-6">
+            <span style="font-size: 2rem">📸</span>
+            <h4 class="mt-2 text-sm font-semibold">Drag and drop images here</h4>
+            <label class="btn btn-outline btn-xs mt-3 cursor-pointer">
+              Choose Files <input type="file" class="hidden" multiple (change)="onImageSelect($event)" />
+            </label>
+          </div>
+        </div>
+
+        @if (images().length > 0) {
+          <div class="flex gap-4 overflow-x-auto mb-8 pb-2">
+            @for (img of images(); let i = $index; track i) {
+              <div class="relative flex-shrink-0" style="width:120px">
+                <img [src]="img" class="rounded object-cover h-24 w-full" />
+                <button class="absolute -top-2 -right-2 bg-rose text-white rounded-full w-6 h-6 flex items-center justify-center" (click)="deleteImage(i)">✕</button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Documents -->
+        <h4 class="mb-2 font-semibold mt-4">Verification Documents (Optional)</h4>
+        <div class="flex flex-col gap-3">
+          <!-- Reg Book -->
+          <div class="card p-3 flex justify-between items-center text-sm">
+            <div>Registration Book</div>
+            <div>
+              @if (documents().regBook) { <span class="badge badge-emerald">📄 {{ documents().regBook }}</span> <button class="btn btn-ghost btn-xs" (click)="removeDocument('regBook')">✕</button> }
+              @else { <label class="btn btn-outline btn-xs cursor-pointer">Upload <input type="file" class="hidden" (change)="onFileSelect('regBook', $event)" /></label> }
+            </div>
+          </div>
+          <!-- Insurance -->
+          <div class="card p-3 flex justify-between items-center text-sm">
+            <div>Insurance Copy</div>
+            <div>
+              @if (documents().insuranceCert) { <span class="badge badge-emerald">📄 {{ documents().insuranceCert }}</span> <button class="btn btn-ghost btn-xs" (click)="removeDocument('insuranceCert')">✕</button> }
+              @else { <label class="btn btn-outline btn-xs cursor-pointer">Upload <input type="file" class="hidden" (change)="onFileSelect('insuranceCert', $event)" /></label> }
+            </div>
+          </div>
+          <!-- Service Records -->
+          <div class="card p-3 flex justify-between items-center text-sm">
+            <div>Service Records</div>
+            <div>
+              @if (documents().serviceRecords) { <span class="badge badge-emerald">📄 {{ documents().serviceRecords }}</span> <button class="btn btn-ghost btn-xs" (click)="removeDocument('serviceRecords')">✕</button> }
+              @else { <label class="btn btn-outline btn-xs cursor-pointer">Upload <input type="file" class="hidden" (change)="onFileSelect('serviceRecords', $event)" /></label> }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Wizard Buttons Actions -->
+    <div class="flex justify-between items-center mt-6">
+      <button class="btn btn-outline" [disabled]="currentStep() === 1" (click)="prevStep()">
+        ← Back
+      </button>
+      
+      <button class="btn btn-primary" (click)="nextStep()">
+        {{ currentStep() === 6 ? 'Submit Listing' : 'Next Step →' }}
+      </button>
+    </div>
+  }
+</div>

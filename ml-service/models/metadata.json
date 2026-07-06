@@ -1,0 +1,93 @@
+{
+  "best_model": "XGBoost",
+  "feature_cols": [
+    "Brand_enc",
+    "Model_enc",
+    "Age",
+    "Mileage",
+    "EngineCC",
+    "Condition_enc",
+    "Service_enc",
+    "Accident_enc",
+    "OwnerCount"
+  ],
+  "metrics": {
+    "LinearRegression": {
+      "MAE": 53862.83,
+      "RMSE": 69800.74,
+      "R2": 0.6304
+    },
+    "DecisionTree": {
+      "MAE": 17601.54,
+      "RMSE": 37396.79,
+      "R2": 0.8939
+    },
+    "XGBoost": {
+      "MAE": 7736.51,
+      "RMSE": 14634.14,
+      "R2": 0.9838
+    }
+  },
+  "encoder_classes": {
+    "brand": [
+      "Bajaj",
+      "Hero",
+      "Honda",
+      "KTM",
+      "Suzuki",
+      "TVS",
+      "Vespa",
+      "Yamaha"
+    ],
+    "model": [
+      "Apache",
+      "Avenger",
+      "Bandit",
+      "Burgman",
+      "CB Shine",
+      "CB Unicorn",
+      "CB150R",
+      "CT100",
+      "Dio",
+      "Duke 200",
+      "Duke 390",
+      "FZ",
+      "FZS",
+      "GSX",
+      "Gixxer",
+      "Glamour",
+      "Hornet",
+      "Jupiter",
+      "MT15",
+      "Notte",
+      "Ntorq",
+      "Passion",
+      "Platina",
+      "Pulsar",
+      "R15",
+      "RC 125",
+      "SXL",
+      "Saluto",
+      "Splendor",
+      "Star City",
+      "VXL",
+      "Xtreme"
+    ],
+    "condition": [
+      "Excellent",
+      "Fair",
+      "Good",
+      "Poor"
+    ],
+    "service": [
+      "Full",
+      "None",
+      "Partial"
+    ],
+    "accident": [
+      "Major",
+      "Minor",
+      "None"
+    ]
+  }
+}

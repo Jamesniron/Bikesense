@@ -1,0 +1,60 @@
+<div class="container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-rose">Admin Portal</span>
+      <h1 class="mt-2 text-gradient-rose">Reported Listings</h1>
+      <p class="text-muted text-sm">Review user reports and take action on fraudulent listings.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-12">
+        <span class="spinner"></span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Listing ID</th>
+              <th>Reporter</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (report of reports(); track report.id) {
+              <tr>
+                <td>#{{ report.id }}</td>
+                <td><a [routerLink]="['/bike', report.listingId]" class="text-cyan">Listing #{{ report.listingId }}</a></td>
+                <td>{{ report.reporterName }}<br><span class="text-xs text-muted">{{ report.reporterEmail }}</span></td>
+                <td>
+                  <span class="badge badge-rose mb-1">{{ report.type }}</span><br>
+                  <span class="text-sm">{{ report.reason }}</span>
+                </td>
+                <td>
+                  <span class="badge" [class.badge-emerald]="report.status === 'Resolved'" [class.badge-amber]="report.status === 'Pending'">
+                    {{ report.status }}
+                  </span>
+                </td>
+                <td>{{ report.date | date:'shortDate' }}</td>
+                <td>
+                  <div class="flex justify-center gap-2">
+                    @if (report.status === 'Pending') {
+                      <button class="btn btn-outline btn-sm text-rose" (click)="rejectListing(report)">Remove Listing</button>
+                      <button class="btn btn-outline btn-sm text-emerald" (click)="resolveReport(report)">Dismiss Report</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

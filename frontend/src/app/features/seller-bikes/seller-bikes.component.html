@@ -1,0 +1,137 @@
+<div class="seller-bikes container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-cyan">Inventory Management</span>
+      <h1 class="mt-2 text-gradient-cyan">My Motorcycle Listings</h1>
+      <p class="text-muted text-sm">Review, edit, duplicate, archive, or check customer enquiries on your active listings.</p>
+    </div>
+    <div>
+      <a routerLink="/seller/add-bike" class="btn btn-primary">
+        ➕ Add New Motorcycle
+      </a>
+    </div>
+  </div>
+
+  <!-- Status Tabs -->
+  <div class="tabs-header mb-6">
+    @for (tab of tabs; track tab) {
+      <button class="tab-btn" [class.active]="currentTab() === tab" (click)="selectTab(tab)">
+        {{ tab }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+      <span class="spinner spinner-lg"></span>
+    </div>
+  } @else {
+    @if (bikes().length === 0) {
+      <div class="card p-8 text-center">
+        <div style="font-size:3rem" class="mb-4">🏍️</div>
+        <h4>No listings found</h4>
+        <p class="text-muted text-sm mt-1">You do not have any listings in the "{{ currentTab() }}" status tab.</p>
+        <a routerLink="/seller/add-bike" class="btn btn-primary btn-sm mt-4">Create First Listing</a>
+      </div>
+    } @else {
+      <!-- Listings Grid / List -->
+      <div class="bikes-list card p-4">
+        <div class="table-wrap">
+          <table class="inventory-table text-sm">
+            <thead>
+              <tr>
+                <th>Motorcycle</th>
+                <th>Asking Price</th>
+                <th>Mileage</th>
+                <th>Status</th>
+                <th>Views</th>
+                <th>Wishlist</th>
+                <th>Enquiries</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bike of bikes(); track bike.id) {
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <img [src]="bike.imageUrls[0] || 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=100&auto=format'" 
+                           [alt]="bike.title" class="bike-thumb" />
+                      <div>
+                        <div class="font-bold">{{ bike.brand }} {{ bike.model }}</div>
+                        <div class="text-xs text-muted">{{ bike.year }} · {{ bike.location }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><div class="font-semibold text-gradient-cyan">{{ formatPrice(bike.price) }}</div></td>
+                  <td>{{ bike.mileage.toLocaleString() }} km</td>
+                  <td>
+                    <span class="badge" 
+                          [class.badge-emerald]="bike.status === 'Active'"
+                          [class.badge-amber]="bike.status === 'Pending'"
+                          [class.badge-gray]="bike.status === 'Archived' || bike.status === 'Sold'"
+                          [class.badge-rose]="bike.status === 'Rejected'">
+                      {{ bike.status }}
+                    </span>
+                  </td>
+                  <td>{{ bike.views || 0 }}</td>
+                  <td>❤️ {{ bike.wishlistCount || 0 }}</td>
+                  <td>
+                    <button class="enquiry-count-btn" (click)="viewEnquiries(bike)" [disabled]="!bike.enquiries?.length">
+                      💬 {{ bike.enquiries?.length || 0 }}
+                    </button>
+                  </td>
+                  <td>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button class="btn btn-outline btn-sm action-btn" (click)="editBike(bike.id)">✏️ Edit</button>
+                        <button class="btn btn-outline btn-sm action-btn" (click)="duplicateBike(bike.id)" title="Clone Listing">📋 Clone</button>
+                        
+                        @if (bike.status === 'Active') {
+                          <button class="btn btn-outline btn-sm action-btn text-cyan" (click)="changeStatus(bike.id, 'Sold')">🤝 Sold</button>
+                          <button class="btn btn-outline btn-sm action-btn" (click)="changeStatus(bike.id, 'Archived')">📁 Archive</button>
+                        }
+                        @if (bike.status === 'Archived' || bike.status === 'Rejected') {
+                          <button class="btn btn-outline btn-sm action-btn text-emerald" (click)="changeStatus(bike.id, 'Pending')">🚀 Reactivate</button>
+                        }
+
+                        <button class="btn btn-danger btn-sm action-btn" (click)="deleteBike(bike.id)" title="Remove permanently">✕</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- ═══ Buyer Enquiry Modal Overlay ═══════════════════════════════════ -->
+@if (showEnquiryModal()) {
+  <div class="modal-overlay animate-in" (click)="closeEnquiryModal()">
+    <div class="modal-card card p-6" (click)="$event.stopPropagation()">
+      <div class="flex justify-between items-center mb-4">
+        <h3>💬 Buyer Enquiries</h3>
+        <button class="btn btn-ghost btn-sm" (click)="closeEnquiryModal()">✕</button>
+      </div>
+      <p class="text-sm text-muted mb-4">Enquiries received for: <strong>{{ selectedBikeTitle() }}</strong></p>
+
+      <div class="enquiries-container flex flex-col gap-4">
+        @for (e of activeEnquiries(); track e.id) {
+          <div class="enquiry-card card p-4">
+            <div class="flex justify-between text-xs text-muted mb-2">
+              <span class="font-bold text-primary">{{ e.buyerName }}</span>
+              <span>{{ e.date | date:'short' }}</span>
+            </div>
+            <div class="text-sm mb-2">"{{ e.message }}"</div>
+            <div class="flex gap-4 text-xs text-muted">
+              <span>📞 {{ e.buyerPhone }}</span>
+              <span>✉️ {{ e.buyerEmail }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

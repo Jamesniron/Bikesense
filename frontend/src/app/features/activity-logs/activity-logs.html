@@ -1,0 +1,37 @@
+<div class="container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-rose">Admin Portal</span>
+      <h1 class="mt-2 text-gradient-rose">System Activity Logs</h1>
+      <p class="text-muted text-sm">Audit trail of all administrative and system actions.</p>
+    </div>
+  </div>
+
+  <div class="card p-6">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-12">
+        <span class="spinner"></span>
+      </div>
+    } @else {
+      <div class="flex flex-col gap-4">
+        @for (log of logs(); track log.id) {
+          <div class="flex items-start gap-4 p-4 border border-divider rounded hover:bg-surface-light transition-colors">
+            <div class="text-2xl mt-1">
+              {{ log.action.includes('Suspended') || log.action.includes('Rejected') ? '🔴' : '🟢' }}
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <div class="font-bold text-sm" [class]="getActionClass(log.action)">{{ log.action }}</div>
+                <div class="text-xs text-muted">{{ log.timestamp | date:'short' }}</div>
+              </div>
+              <div class="text-sm mt-1">{{ log.details }}</div>
+              <div class="text-xs text-muted mt-2">
+                User ID: {{ log.userId }} | Target ID: {{ log.targetId || 'N/A' }} | IP: {{ log.ipAddress }}
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,36 @@
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.chart-container {
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.svg-chart-wrapper {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.svg-chart {
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+
+.grid-line {
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 1;
+}
+
+.chart-labels span {
+  width: calc(100% / 7);
+  text-align: center;
+}

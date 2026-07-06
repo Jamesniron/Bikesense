@@ -1,0 +1,93 @@
+<div class="admin-dashboard container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-rose">Admin Portal</span>
+      <h1 class="mt-2 text-gradient-rose">System Dashboard</h1>
+      <p class="text-muted text-sm">Overview of marketplace activity and system health.</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="flex justify-center items-center py-12">
+      <span class="spinner spinner-lg"></span>
+    </div>
+  } @else {
+    <div class="grid-4 mb-8">
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--cyan)">👥</div>
+        <div class="stat-value">{{ stats()?.totalUsers || 0 }}</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--emerald)">🏍️</div>
+        <div class="stat-value">{{ stats()?.totalBikes || 0 }}</div>
+        <div class="stat-label">Total Listings</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--amber)">⏳</div>
+        <div class="stat-value">{{ stats()?.pendingApprovals || 0 }}</div>
+        <div class="stat-label">Pending Approvals</div>
+      </div>
+      <div class="card p-5 stat-card">
+        <div class="stat-icon" style="color: var(--rose)">⚠️</div>
+        <div class="stat-value">{{ stats()?.reportedListings || 0 }}</div>
+        <div class="stat-label">Reported Listings</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card p-6">
+        <h3 class="mb-4">Quick Links</h3>
+        <div class="flex flex-col gap-3">
+          <a routerLink="/admin/users" class="btn btn-outline flex justify-between items-center">
+            <span>👥 User Management</span>
+            <span>→</span>
+          </a>
+          <a routerLink="/admin/motorcycles" class="btn btn-outline flex justify-between items-center">
+            <span>🏍️ Motorcycle Management</span>
+            <span>→</span>
+          </a>
+          <a routerLink="/admin/reports" class="btn btn-outline flex justify-between items-center">
+            <span>⚠️ Admin Reports</span>
+            <span>→</span>
+          </a>
+          <a routerLink="/admin/analytics" class="btn btn-outline flex justify-between items-center">
+            <span>📊 System Analytics</span>
+            <span>→</span>
+          </a>
+          <a routerLink="/admin/activity-logs" class="btn btn-outline flex justify-between items-center">
+            <span>📜 Activity Logs</span>
+            <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="card p-6 bg-surface-light border border-rose">
+        <h3 class="mb-4 text-rose">System Status</h3>
+        <div class="flex flex-col gap-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>Database Health</span>
+              <span class="text-emerald">Healthy (99.9% Uptime)</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 100%; background: var(--emerald)"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>AI Valuation API</span>
+              <span class="text-emerald">Online (42ms latency)</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 100%; background: var(--emerald)"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>Storage Usage</span>
+              <span class="text-cyan">42% (2.1TB / 5TB)</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 42%; background: var(--cyan)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

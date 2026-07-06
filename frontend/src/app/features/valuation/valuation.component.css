@@ -1,0 +1,306 @@
+/* ─── Hero ───────────────────────────────────────────────────── */
+.val-hero {
+  position: relative;
+  padding: 5rem 0 4rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0B0F19 0%, #100B1E 100%);
+}
+
+.val-hero-bg { position: absolute; inset: 0; }
+
+.val-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.12;
+}
+
+.val-orb-1 {
+  width: 500px; height: 500px;
+  background: var(--violet);
+  top: -150px; right: -100px;
+  animation: float 9s ease-in-out infinite;
+}
+
+.val-orb-2 {
+  width: 300px; height: 300px;
+  background: var(--cyan);
+  bottom: -100px; left: -60px;
+  animation: float 7s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-25px); }
+}
+
+.val-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 680px;
+}
+
+.val-hero-inner h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.val-hero-inner p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* ─── Layout ────────────────────────────────────────────────── */
+.val-layout { padding: 3rem 0 6rem; }
+
+.val-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ─── Form Panel ─────────────────────────────────────────────── */
+.form-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.val-form-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+}
+
+/* ─── Results ────────────────────────────────────────────────── */
+.val-placeholder {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.placeholder-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.val-placeholder h4 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.val-placeholder p  { color: var(--text-secondary); font-size: 0.9rem; }
+
+/* ─── Price Card ────────────────────────────────────────────── */
+.result-price-card {
+  background: linear-gradient(145deg, rgba(139,92,246,0.1), rgba(6,182,212,0.05));
+  border-color: var(--border-violet);
+  text-align: center;
+}
+
+.result-price-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.result-price-main {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  background: var(--gradient-violet);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.result-price-lkr {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.deal-rating-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.deal-excellent { background: var(--emerald-dim); color: var(--emerald); }
+.deal-fair      { background: var(--amber-dim);   color: var(--amber); }
+.deal-overpriced{ background: var(--rose-dim);    color: var(--rose); }
+
+.bargain-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.bargain-label { font-size: 0.8rem; color: var(--text-secondary); }
+.bargain-value { font-weight: 700; color: var(--cyan); }
+
+/* ─── Health Score ───────────────────────────────────────────── */
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.health-score-num {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 900;
+}
+
+.health-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 0.1rem;
+}
+
+.health-ring {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--clr, #10B981) calc(var(--score, 75) * 3.6deg),
+    rgba(255,255,255,0.06) 0
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.health-ring::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+}
+
+.health-ring span {
+  position: relative;
+  z-index: 1;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+/* ─── Depreciation Chart ─────────────────────────────────────── */
+.section-mini-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.depr-chart { display: flex; flex-direction: column; gap: 1rem; }
+
+.depr-row {
+  display: grid;
+  grid-template-columns: 50px 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.depr-year {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.depr-bar-wrap {
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--radius-full);
+  height: 8px;
+  overflow: hidden;
+}
+
+.depr-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s ease-out;
+}
+
+.depr-val {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.depr-pct {
+  font-size: 0.7rem;
+  color: var(--rose);
+  display: block;
+}
+
+/* ─── Cost Grid ──────────────────────────────────────────────── */
+.cost-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cost-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.875rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.cost-icon { font-size: 1.2rem; }
+.cost-name { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; }
+.cost-val  { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+
+.total-cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  background: var(--violet-dim);
+  border: 1px solid var(--border-violet);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+
+.total-cost-val {
+  font-weight: 800;
+  color: var(--violet);
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .val-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .cost-grid { grid-template-columns: 1fr; }
+}

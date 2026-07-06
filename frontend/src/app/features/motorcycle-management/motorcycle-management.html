@@ -1,0 +1,72 @@
+<div class="container py-8">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <span class="badge badge-rose">Admin Portal</span>
+      <h1 class="mt-2 text-gradient-rose">Motorcycle Management</h1>
+      <p class="text-muted text-sm">Review, approve, and manage motorcycle listings.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    @if (loading()) {
+      <div class="flex justify-center items-center py-12">
+        <span class="spinner"></span>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Seller</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>AI Flag</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bike of bikes(); track bike.id) {
+              <tr>
+                <td>#{{ bike.id }}</td>
+                <td class="font-bold">
+                  <a [routerLink]="['/bike', bike.id]" class="text-cyan">{{ bike.title }}</a>
+                </td>
+                <td>{{ bike.sellerName }}</td>
+                <td>{{ formatPrice(bike.price) }}</td>
+                <td>
+                  <span class="badge" 
+                        [class.badge-emerald]="bike.status === 'Active'" 
+                        [class.badge-amber]="bike.status === 'Pending'"
+                        [class.badge-rose]="bike.status === 'Rejected'"
+                        [class.badge-gray]="bike.status === 'Sold' || bike.status === 'Archived'">
+                    {{ bike.status }}
+                  </span>
+                </td>
+                <td>
+                  @if (bike.isSuspicious) {
+                    <span class="badge badge-rose">Suspicious</span>
+                  } @else {
+                    <span class="badge badge-emerald">Clear</span>
+                  }
+                </td>
+                <td>
+                  <div class="flex justify-center gap-2">
+                    @if (bike.status === 'Pending') {
+                      <button class="btn btn-outline btn-sm text-emerald" (click)="approveBike(bike)">Approve</button>
+                      <button class="btn btn-outline btn-sm text-rose" (click)="rejectBike(bike)">Reject</button>
+                    }
+                    @if (bike.status === 'Active') {
+                      <button class="btn btn-outline btn-sm text-rose" (click)="rejectBike(bike)">Unpublish</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
