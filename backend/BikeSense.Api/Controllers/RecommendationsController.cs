@@ -12,12 +12,19 @@ namespace BikeSense.Api.Controllers
     [Route("api/[controller]")]
     public class RecommendationsController : ControllerBase
     {
+        // ml-service's RecommendRequest (app.py) is a plain Pydantic model with no
+        // camelCase alias, so it only accepts exact PascalCase keys (Budget, UsageType, ...).
+        // PropertyNamingPolicy = null keeps PostAsJsonAsync from camelCasing them.
+        private static readonly JsonSerializerOptions MlRequestOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = null
+        };
+
         private readonly HttpClient _httpClient;
 
         public RecommendationsController(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient("MlServiceClient");
-            _httpClient.BaseAddress = new Uri("http://localhost:8000/");
         }
 
         [HttpPost]
@@ -25,7 +32,7 @@ namespace BikeSense.Api.Controllers
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("recommend", request);
+                var response = await _httpClient.PostAsJsonAsync("recommend", request, MlRequestOptions);
                 if (response.IsSuccessStatusCode)
                 {
                     var resultStr = await response.Content.ReadAsStringAsync();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using BikeSense.Api.Core.DTOs;
 using BikeSense.Api.Core.Interfaces;
@@ -12,6 +13,14 @@ namespace BikeSense.Api.Core.Services
 {
     public class ValuationService : IValuationService
     {
+        // ml-service's PredictRequest (app.py) is a plain Pydantic model with no
+        // camelCase alias, so it only accepts exact PascalCase keys (Brand, Model, ...).
+        // PropertyNamingPolicy = null keeps PostAsJsonAsync from camelCasing them.
+        private static readonly JsonSerializerOptions MlRequestOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = null
+        };
+
         private readonly HttpClient _httpClient;
         private readonly ILogger<ValuationService> _logger;
 
@@ -24,29 +33,38 @@ namespace BikeSense.Api.Core.Services
 
         public async Task<ValuationResultDto> ValuationDiagnosticAsync(ValuationRequestDto request, decimal? listPrice)
         {
-            decimal predictedPrice = 0;
-            bool fetchSuccess = false;
+            decimal predictedPrice;
 
             // 1. Attempt to hit Python ML REST API
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("http://localhost:8000/predict?list_price=" + listPrice, request);
+                var response = await _httpClient.PostAsJsonAsync("predict?list_price=" + listPrice, request, MlRequestOptions);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"ML service returned {(int)response.StatusCode}: {errBody}");
+                }
                 if (response.IsSuccessStatusCode)
                 {
-                    var resultStr = await response.Content.ReadAsStringAsync();
-                    try {
-                        var mlResult = JsonSerializer.Deserialize<ValuationResultDto>(resultStr, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                        if (mlResult != null && mlResult.PredictedPrice > 0) {
-                            return mlResult;
-                        }
-                    } catch (Exception) {
-                        // Fallback to manual parsing if schema differs slightly
-                        using var doc = JsonDocument.Parse(resultStr);
-                        if (doc.RootElement.TryGetProperty("predicted_price", out var priceToken))
+                    var mlResult = await response.Content.ReadFromJsonAsync<MlPredictResponse>();
+                    if (mlResult != null && mlResult.PredictedPrice > 0)
+                    {
+                        return new ValuationResultDto
                         {
-                            predictedPrice = priceToken.GetDecimal();
-                            fetchSuccess = true;
-                        }
+                            PredictedPrice = Math.Round(mlResult.PredictedPrice, 0),
+                            HealthScore = mlResult.HealthScore,
+                            DealRating = mlResult.DealRating,
+                            DepreciationCurve = mlResult.DepreciationCurve.ConvertAll(p => new YearlyDepreciationDto
+                            {
+                                YearsPassed = p.Year,
+                                ProjectedValue = p.Value
+                            }),
+                            SuggestedBargainPrice = mlResult.BargainPrice,
+                            AnnualFuelCost = mlResult.AnnualFuelCost,
+                            AnnualMaintenanceCost = mlResult.AnnualMaintenance,
+                            AnnualInsuranceCost = mlResult.AnnualInsurance,
+                            AnnualLicenseCost = mlResult.AnnualLicense
+                        };
                     }
                 }
             }
@@ -55,11 +73,8 @@ namespace BikeSense.Api.Core.Services
                 _logger.LogWarning($"Unable to query Python FastAPI ML Service: {ex.Message}. Falling back to internal engine.");
             }
 
-            // 2. Fallback: Calibrated Regression Model
-            if (!fetchSuccess)
-            {
-                predictedPrice = CalculateFallbackPrice(request);
-            }
+            // 2. Fallback: Calibrated Regression Model (ML service unreachable or returned an invalid result)
+            predictedPrice = CalculateFallbackPrice(request);
 
             // 3. Calculate Health Score (0-100)
             int healthScore = CalculateHealthScore(request);
@@ -253,5 +268,52 @@ namespace BikeSense.Api.Core.Services
             if (age < 0) age = 0;
             return age;
         }
+    }
+
+    /// <summary>
+    /// Mirrors the snake_case JSON shape of ml-service's PredictResponse (app.py).
+    /// Deserializing straight into ValuationResultDto silently fails because the
+    /// field names/casing don't match, so this bridges the two schemas explicitly.
+    /// </summary>
+    internal class MlPredictResponse
+    {
+        [JsonPropertyName("predicted_price")]
+        public decimal PredictedPrice { get; set; }
+
+        [JsonPropertyName("health_score")]
+        public int HealthScore { get; set; }
+
+        [JsonPropertyName("deal_rating")]
+        public string DealRating { get; set; } = "Fair Price";
+
+        [JsonPropertyName("depreciation_curve")]
+        public List<MlDepreciationPoint> DepreciationCurve { get; set; } = new List<MlDepreciationPoint>();
+
+        [JsonPropertyName("bargain_price")]
+        public decimal BargainPrice { get; set; }
+
+        [JsonPropertyName("annual_fuel_cost")]
+        public decimal AnnualFuelCost { get; set; }
+
+        [JsonPropertyName("annual_maintenance")]
+        public decimal AnnualMaintenance { get; set; }
+
+        [JsonPropertyName("annual_insurance")]
+        public decimal AnnualInsurance { get; set; }
+
+        [JsonPropertyName("annual_license")]
+        public decimal AnnualLicense { get; set; }
+
+        [JsonPropertyName("model_used")]
+        public string ModelUsed { get; set; } = string.Empty;
+    }
+
+    internal class MlDepreciationPoint
+    {
+        [JsonPropertyName("year")]
+        public int Year { get; set; }
+
+        [JsonPropertyName("value")]
+        public decimal Value { get; set; }
     }
 }
