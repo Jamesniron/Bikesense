@@ -41,13 +41,18 @@ Write-Host ""
 # 2. Install ML service dependencies (only if missing)
 # ---------------------------------------------------------------
 Write-Step "[2/5] Checking ML service dependencies..."
-$pyExeName   = $null
-$pyExtraArgs = @()
+$pyExeName        = $null
+$pyExtraArgs      = @()
+$pyVersionMatched = $false
+$pyInstallHint    = "Install Python 3.12 from https://www.python.org/downloads/release/python-3120/ then re-run this script - it will pick up 3.12 automatically."
 
+# pandas/numpy at the versions pinned in requirements.txt only ship prebuilt
+# wheels for Python 3.9-3.12. On anything newer, pip falls back to building
+# from source, which fails on most machines (missing MSVC/vswhere setup).
 if (Get-Command py -ErrorAction SilentlyContinue) {
-    foreach ($v in '3.12', '3.11', '3.13', '3.10', '3.9') {
+    foreach ($v in '3.12', '3.11', '3.10', '3.9') {
         & py "-$v" --version *> $null
-        if ($LASTEXITCODE -eq 0) { $pyExeName = 'py'; $pyExtraArgs = @("-$v"); break }
+        if ($LASTEXITCODE -eq 0) { $pyExeName = 'py'; $pyExtraArgs = @("-$v"); $pyVersionMatched = $true; break }
     }
     if (-not $pyExeName) { $pyExeName = 'py' }
 } elseif (Get-Command python -ErrorAction SilentlyContinue) {
@@ -55,11 +60,17 @@ if (Get-Command py -ErrorAction SilentlyContinue) {
 }
 
 if (-not $pyExeName) {
-    Write-Err "Python was not found on PATH. Install Python 3.9-3.13 and re-run."
+    Write-Err "Python was not found on PATH. Install Python 3.9-3.12 and re-run."
     Stop-AndExit 1
 }
 $pyDisplay = (@($pyExeName) + $pyExtraArgs) -join ' '
 Write-Host "  Using: $pyDisplay"
+
+if (-not $pyVersionMatched) {
+    Write-Warn "No Python 3.9-3.12 install was found on this machine (only newer/untested versions)."
+    Write-Warn "The ML dependencies below may fail to install as a result. If they do, and the error"
+    Write-Warn "mentions 'meson', 'vswhere', or 'building wheel': $pyInstallHint"
+}
 
 # Resolve the real python.exe path: the "py" launcher hands off to the actual
 # interpreter and can exit before it, orphaning the child so its PID can no
@@ -73,6 +84,10 @@ Pop-Location
 
 if ($pipExit -ne 0) {
     Write-Err "ML dependency install failed. See the pip output above."
+    if (-not $pyVersionMatched) {
+        Write-Err "This is most likely because $pyDisplay has no prebuilt wheels for these packages."
+        Write-Err $pyInstallHint
+    }
     Stop-AndExit 1
 }
 Write-Ok "ML service dependencies installed."
