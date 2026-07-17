@@ -4,12 +4,13 @@ import { Router } from '@angular/router';
 import { tap, catchError } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { AuthResponse, UserLogin, UserRegister, TokenPayload } from '../models/models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http   = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly baseUrl = 'http://localhost:5000/api/auth';
+  private readonly baseUrl = `${environment.apiUrl}/auth`;
 
   readonly currentUser = signal<AuthResponse | null>(this.loadStoredUser());
   readonly isLoggedIn  = signal<boolean>(!!this.loadStoredUser());

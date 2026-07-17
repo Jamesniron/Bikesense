@@ -37,9 +37,16 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Register Http Client configuration for Python ML service calls
+var mlServiceBaseUrl = builder.Configuration["MlService:BaseUrl"] ?? "http://localhost:8000/";
+
 builder.Services.AddHttpClient<IValuationService, ValuationService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8000/");
+    client.BaseAddress = new Uri(mlServiceBaseUrl);
+});
+
+builder.Services.AddHttpClient("MlServiceClient", client =>
+{
+    client.BaseAddress = new Uri(mlServiceBaseUrl);
 });
 
 // 3. JWT Authentication Setup
@@ -120,9 +127,18 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<BikeSenseDbContext>();
-    // EnsureCreated applies seeds configured in OnModelCreating (e.g. Roles)
-    context.Database.EnsureCreated();
-    
+    if (!string.IsNullOrEmpty(connectionString))
+    {
+        // Apply pending EF Core migrations against SQL Server
+        context.Database.Migrate();
+    }
+    else
+    {
+        // InMemory provider doesn't support migrations; EnsureCreated applies
+        // the OnModelCreating seeds (e.g. Roles) directly.
+        context.Database.EnsureCreated();
+    }
+
     // Seed initial users and bikes if DB is empty
     DbInitializer.SeedData(context);
 }
@@ -144,5 +160,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Serve the built Angular frontend (copied into wwwroot at image build time)
+// and fall back to index.html for client-side routes that aren't API calls.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.MapFallbackToFile("index.html");
 
 app.Run();

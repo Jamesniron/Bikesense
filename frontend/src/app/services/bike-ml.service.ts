@@ -6,16 +6,17 @@ import {
   ValuationRequest, ValuationResult,
   RecommendRequest, RecommendResponse
 } from '../models/models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BikeMlService {
   private readonly http = inject(HttpClient);
 
   /** Backend ASP.NET API (which proxies to Python ML or uses its own fallback) */
-  private readonly backendUrl = 'http://localhost:5073/api/valuation';
+  private readonly backendUrl = `${environment.apiUrl}/valuation`;
 
   /** Direct Python FastAPI (optional direct hit) */
-  private readonly mlUrl = 'http://localhost:8000';
+  private readonly mlUrl = environment.mlServiceUrl;
 
   valuate(request: ValuationRequest, listPrice?: number): Observable<ValuationResult> {
     let url = `${this.backendUrl}/valuate`;
@@ -26,8 +27,7 @@ export class BikeMlService {
   }
 
   recommend(request: RecommendRequest): Observable<RecommendResponse> {
-    const baseUrl = 'http://localhost:5073/api';
-    return this.http.post<RecommendResponse>(`${baseUrl}/recommendations`, {
+    return this.http.post<RecommendResponse>(`${environment.apiUrl}/recommendations`, {
       Budget:          request.budget,
       UsageType:       request.usageType,
       PreferredBrand:  request.preferredBrand,
